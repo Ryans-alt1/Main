@@ -14,7 +14,7 @@ while i <= numel(L)
 
     toks = split(line);
     rawImg = char(toks{1});
-    key    = make_key(rawImg);     % ← normalize
+    keys   = make_key_variants(rawImg);   % ← normalize, incl. padding variants
 
     rest = str2double(toks(2:end));
     boxes = [];
@@ -47,6 +47,14 @@ while i <= numel(L)
     end
 
     if isempty(boxes), boxes = zeros(0,4); end
-    M(key) = boxes;
+    % store under all normalized variants (case/zero-padding tolerant)
+    for v = 1:numel(keys)
+        key = keys{v};
+        if isKey(M, key)
+            M(key) = [M(key); boxes];
+        else
+            M(key) = boxes;
+        end
+    end
 end
 end
